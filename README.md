@@ -1,5 +1,5 @@
 # snips-pi-gen
-Fork of RichardBronosky/pi-gen-extender. Creates images for an minimalistic and Snips based private voice assistant.
+Fork of RichardBronosky/pi-gen-extender. Creates images based on Raspbian Stretch Lite for a minimalistic and Snips based private voice assistant.
 
 ## What does this do?
 
