@@ -1,0 +1,5 @@
+Package: helloworld
+Version: 0.3
+Maintainer: Bruno Bronosky
+Architecture: all
+Description: A friendly helper
