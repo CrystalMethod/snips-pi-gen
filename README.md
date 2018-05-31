@@ -16,12 +16,11 @@ The provisioning script serves this purposes:
 ### without Vagrant:
 
 #### Note:
-> I have successfully used an AWS EC2 instance with Ubuntu 16.04 to generate the Raspbian image using this method.
 
 <!-- -->
 
-    git clone https://github.com/RichardBronosky/pi-gen-extender.git
-    cd pi-gen-extender
+    git clone https://github.com/CrystalMethod/snips-pi-gen.git
+    cd snips-pi-gen
     source provision.sh
     provision
     sudo ./build.sh
@@ -30,12 +29,11 @@ The provisioning script serves this purposes:
 ### with Vagrant:
 
 #### Note:
-> I have had problems doing this on macOS Sierra, but I'm including how it's intended to work here until I better understand the issue. It could be just my computer, or could be the OS. I've yet to try it on Linux or Windows.
 
 <!-- -->
 
-    git clone https://github.com/RichardBronosky/pi-gen-extender.git
-    cd pi-gen-extender
+    git clone https://github.com/CrystalMethod/snips-pi-gen.git
+    cd snips-pi-gen
     vagrant up
     vagrant ssh
     cd pi-gen
