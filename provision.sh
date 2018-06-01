@@ -12,7 +12,7 @@ create_basic_configuration(){
 }
 
 create_installation_customization_demo(){
-	cp -aR $script_path/03-snips $(pwd)/stage2
+	cp -aR $script_path/assets/03-snips $(pwd)/stage2
 	files_path="$(pwd)/stage2/03-snips/files"
 }
 
