@@ -44,4 +44,4 @@ The provisioning script serves this purposes:
 https://github.com/RichardBronosky/pi-gen-extender   
 https://github.com/RPi-Distro/pi-gen   
 
-[1]: https://github.com/CrystalMethod/snips-pi-gen/tree/master/03-snips
+[1]: https://github.com/CrystalMethod/snips-pi-gen/tree/master/assets/03-snips
