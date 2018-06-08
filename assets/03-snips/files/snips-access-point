@@ -1,0 +1,112 @@
+#!/bin/bash
+#
+
+set -e
+
+log() {
+  echo "$1"
+}
+
+config_path="/boot/hotspot.txt"
+
+if [ -f $config_path ]; then
+
+  log "Config file found at $config_path, activating access point"
+
+  hotspot_ssid=$(sed -n -e 's/^ssid=\(.\+\)$/\1/p' /boot/hotspot.txt)
+
+  # 802.11i specs:
+  # The length of the SSID information field is between 0 and 32 octets.
+  # A 0 length information field is used within Probe Request management frames
+  # to indicate the wildcard SSID.
+  if [ ${#hotspot_ssid} -lt 1 ] || [ ${#hotspot_ssid} -gt 32 ]; then
+    log "Using default access point SSID"
+    hotspot_ssid="Snips-AP"
+  fi
+
+  hide_hostname=$(sed -n -e 's/^hide_hostname=\(.\+\)$/\1/p' /boot/hotspot.txt)
+
+  if [ "$hide_hostname" != "1" ]; then
+    # append the hostname to avoid ssid collision
+    hotspot_ssid="$hotspot_ssid ($(hostname))"
+  fi
+
+  log "SSID will be '$hotspot_ssid'"
+
+  hotspot_passphrase=$(sed -n -e 's/^passphrase=\(.\+\)$/\1/p' /boot/hotspot.txt)
+
+  # 802.11i specs:
+  # A pass-phrase is a sequence of between 8 and 63 ASCII-encoded characters.
+  # The limit of 63 comes from the desire to distinguish between a pass-phrase
+  # and a PSK displayed as 64 hexadecimal characters.
+  if [ ${#hotspot_passphrase} -lt 8 ] || [ ${#hotspot_passphrase} -gt 63 ]; then
+    log "Using default passphrase"
+    hotspot_passphrase="snips.ai"
+  fi
+
+  log "Updating hostapd configuration"
+
+  sed -i "s/^ssid=.*/ssid=$hotspot_ssid/g" /etc/hostapd/hostapd.conf
+  sed -i "s/^wpa_passphrase=.*/wpa_passphrase=$hotspot_passphrase/g" /etc/hostapd/hostapd.conf
+
+  if ! grep "^denyinterfaces wlan0$" /etc/dhcpcd.conf; then
+    log "dhcpcd will ignore wlan0"
+    echo "denyinterfaces wlan0" | tee -a /etc/dhcpcd.conf
+    systemctl restart dhcpcd
+  fi
+
+  if pgrep wpa_supplicant; then
+    log "Stopping wpa_supplicant"
+    wpa_pid=$(pgrep wpa_supplicant)
+    kill "$wpa_pid"
+  fi
+
+  log "Updating interfaces"
+
+  ifdown wlan0 &>/dev/null
+  ifconfig wlan0 10.99.99.1
+  ifup wlan0
+
+  log "Restarting services"
+
+  systemctl daemon-reload
+  systemctl restart networking
+  systemctl restart dnsmasq
+  systemctl stop hostapd
+
+  # hostapd won't use new config if it has been changed.
+  # `sleep` seems to make it work
+  sleep 5
+  systemctl start hostapd
+
+  log "Access point UP"
+else
+  log "Deactivating access point"
+
+  if grep "^denyinterfaces wlan0$" /etc/dhcpcd.conf; then
+    sed -i "/denyinterfaces wlan0/d" /etc/dhcpcd.conf
+    systemctl restart dhcpcd
+  fi
+
+  systemctl stop dnsmasq
+  systemctl stop hostapd
+
+  ifdown wlan0 &>/dev/null
+  ifconfig wlan0 0.0.0.0
+  ifup wlan0
+
+  systemctl restart networking
+
+  wpa_pid=$(pgrep wpa_supplicant)
+  if [ -n "$wpa_pid" ]; then
+    log "Stopping wpa_supplicant"
+    kill "$wpa_pid"
+  fi
+
+  log "Starting wpa_supplicant with config: /etc/wpa_supplicant/wpa_supplicant.conf"
+  wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
+
+  log "Access point DOWN"
+fi
+
+exit 0

@@ -3,3 +3,6 @@ dialog
 python-pip
 hostapd
 dnsmasq
+nginx
+uwsgi
+uwsgi-plugin-python3

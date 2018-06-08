@@ -1,0 +1,11 @@
+[Unit]
+Description=Generates a wireless access point
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/snips-access-point
+
+[Install]
+WantedBy=multi-user.target
