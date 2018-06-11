@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 on_chroot << EOF
 usermod -a -G snips-skills-admin pi
 systemctl stop snips-asr-google
